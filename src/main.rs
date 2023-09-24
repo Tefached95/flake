@@ -1,23 +1,36 @@
 pub mod instr;
 
 use byteorder::{BigEndian, ReadBytesExt};
-use std::{self, io::Write};
+use std::{self, io::Write, path::Path};
 
 fn main() -> Result<(), String> {
     let args: Vec<String> = std::env::args().collect();
 
-    if args.len() > 2 {
+    if args.len() != 3 {
         return Err(String::from(
-            "Invalid usage.\nUsage: cargo run <path/to/input.ch8> <path/to/output/dir>",
+            format!("Invalid usage.\nUsage: `cargo run <path/to/input.ch8> <path/to/output/dir>`\nThe program takes a `.ch8` file, and outputs an `.asm` file with the same base name as the input.\n\tExample: `cargo run /home/me/Documents/maze.ch8 /home/me/Documents/` will produce a `maze.asm` file in `/home/me/Documents`"),
         ));
     }
 
-    let program_path: &str = &args[0];
-    let output_path: &str = &args[1];
+    let program_path: &str = &args[1];
+    let output_file_name: String;
+    if let Some(base_name) = Path::new(program_path).file_stem() {
+        output_file_name = String::from(format!("{}.asm", base_name.to_str().unwrap()))
+    } else {
+        return Err(String::from(format!(
+            "Failed to read base name from input path: {}",
+            program_path
+        )));
+    }
+    let output_path: String = format!(
+        "{}/{}",
+        String::from(&args[2]).trim_end_matches("/"),
+        output_file_name
+    );
 
     match std::fs::read(program_path) {
         Ok(file_contents) => {
-            if let Ok(output_buffer) = std::fs::File::create(output_path) {
+            if let Ok(output_buffer) = std::fs::File::create(&output_path) {
                 let length = file_contents.len();
 
                 let mut cursor = std::io::Cursor::new(file_contents);
@@ -99,7 +112,7 @@ fn main() -> Result<(), String> {
                     }
                 }
             } else {
-                return Err(format!("Failed creating file {}", output_path));
+                return Err(format!("Failed creating file {}", &output_path));
             }
         }
         Err(e) => return Err(e.to_string()),
