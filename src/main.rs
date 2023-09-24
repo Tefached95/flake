@@ -3,13 +3,21 @@ pub mod instr;
 use byteorder::{BigEndian, ReadBytesExt};
 use std::{self, io::Write};
 
-const PROGRAM_PATH: &str = "/home/marko/Documents/Projects/odin8/programs/maze.ch8";
-const OUTPUT_PATH: &str = "./maze.asm";
+fn main() -> Result<(), String> {
+    let args: Vec<String> = std::env::args().collect();
 
-fn main() {
-    match std::fs::read(PROGRAM_PATH) {
+    if args.len() > 2 {
+        return Err(String::from(
+            "Invalid usage.\nUsage: cargo run <path/to/input.ch8> <path/to/output/dir>",
+        ));
+    }
+
+    let program_path: &str = &args[0];
+    let output_path: &str = &args[1];
+
+    match std::fs::read(program_path) {
         Ok(file_contents) => {
-            if let Ok(output_buffer) = std::fs::File::create(OUTPUT_PATH) {
+            if let Ok(output_buffer) = std::fs::File::create(output_path) {
                 let length = file_contents.len();
 
                 let mut cursor = std::io::Cursor::new(file_contents);
@@ -91,11 +99,10 @@ fn main() {
                     }
                 }
             } else {
-                println!("Failed creating file {}", OUTPUT_PATH);
+                return Err(format!("Failed creating file {}", output_path));
             }
         }
-        Err(error) => {
-            println!("{}", error.to_string());
-        }
+        Err(e) => return Err(e.to_string()),
     }
+    Ok(())
 }
