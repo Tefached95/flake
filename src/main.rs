@@ -99,7 +99,9 @@ fn main() -> Result<(), String> {
                                 };
                             }
                             0x9 => todo!(),
-                            0xA => todo!(),
+                            0xA => {
+                                let _ = writer.write_fmt(format_args!("LD I, ${0:03X} ;; Load address ${0:03X} into the special register I\n", instr.address));
+                            }
                             0xB => todo!(),
                             0xC => todo!(),
                             0xD => todo!(),
