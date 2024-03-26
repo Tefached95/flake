@@ -1,7 +1,9 @@
 [package]
-name = "rust_exercises"
+name = "flake"
 version = "0.1.0"
 edition = "2021"
 
 [dependencies]
 byteorder = "1.4.3"
+eframe = "0.27.0"
+egui = "0.27.0"
